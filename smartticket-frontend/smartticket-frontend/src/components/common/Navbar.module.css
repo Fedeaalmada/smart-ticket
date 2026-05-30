@@ -1,0 +1,71 @@
+.nav {
+  background: var(--bg-primary);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2rem;
+  height: 56px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.logo {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.5px;
+}
+
+.logo span { color: var(--red); }
+
+.links {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.link {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  transition: color var(--transition);
+}
+
+.link:hover { color: var(--text-primary); }
+
+.usuario {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  border-left: 1px solid var(--border);
+  padding-left: 1rem;
+}
+
+.btnOutline {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  padding: 0.4rem 1rem;
+  border-radius: var(--radius-md);
+  font-size: 0.8rem;
+  transition: all var(--transition);
+}
+
+.btnOutline:hover {
+  border-color: var(--red);
+  color: var(--red);
+}
+
+.btnSolid {
+  background: var(--red);
+  color: #fff;
+  border: none;
+  padding: 0.4rem 1.1rem;
+  border-radius: var(--radius-md);
+  font-size: 0.8rem;
+  font-weight: 500;
+  transition: background var(--transition);
+}
+
+.btnSolid:hover { background: var(--red-dark); }

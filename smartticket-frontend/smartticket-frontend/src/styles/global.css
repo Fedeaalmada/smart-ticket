@@ -1,0 +1,51 @@
+/* ── Variables de diseño SmartTicket ── */
+:root {
+  --bg-primary:    #111111;
+  --bg-secondary:  #1A1A1A;
+  --bg-card:       #222222;
+  --bg-card-hover: #2A2A2A;
+
+  --border:        #2A2A2A;
+  --border-hover:  #E03030;
+
+  --text-primary:  #EEEEEE;
+  --text-secondary:#888888;
+  --text-muted:    #555555;
+
+  --red:           #E03030;
+  --red-dark:      #B01818;
+  --red-glow:      rgba(224, 48, 48, 0.15);
+
+  --radius-sm:     4px;
+  --radius-md:     6px;
+  --radius-lg:     8px;
+  --radius-xl:     12px;
+
+  --font-display:  'Syne', sans-serif;
+  --font-body:     'Inter', sans-serif;
+
+  --transition:    0.2s ease;
+}
+
+/* ── Reset ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { text-decoration: none; color: inherit; }
+button { cursor: pointer; font-family: var(--font-body); }
+input, select, textarea { font-family: var(--font-body); }
+img { max-width: 100%; display: block; }
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-primary); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }

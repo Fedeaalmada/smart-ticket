@@ -1,0 +1,17 @@
+# Variables de entorno (NUNCA subir al repo)
+.env
+
+# Binarios compilados
+ticketek-backend
+*.exe
+
+# Dependencias descargadas
+vendor/
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
