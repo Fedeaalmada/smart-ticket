@@ -353,3 +353,261 @@ func TestComprarEntrada_SinDatos(t *testing.T) {
 		t.Errorf("esperaba 400, got: %d", w.Code)
 	}
 }
+
+func TestComprarEntrada_ConToken(t *testing.T) {
+	r := setupRouter()
+	token := obtenerTokenTest(t)
+	body := map[string]uint{"evento_id": 1, "sector_id": 1}
+	jsonBody, _ := json.Marshal(body)
+	req, _ := http.NewRequest("POST", "/entradas/comprar", bytes.NewBuffer(jsonBody))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+token)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+	if w.Code != http.StatusCreated && w.Code != http.StatusBadRequest {
+		t.Errorf("esperaba 201 o 400, got: %d", w.Code)
+	}
+}
+
+func TestCancelarEntrada_ConToken(t *testing.T) {
+	r := setupRouter()
+	token := obtenerTokenTest(t)
+	req, _ := http.NewRequest("DELETE", "/entradas/99999", nil)
+	req.Header.Set("Authorization", "Bearer "+token)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+	if w.Code != http.StatusBadRequest {
+		t.Errorf("esperaba 400, got: %d", w.Code)
+	}
+}
+
+func TestTransferirEntrada_ConToken(t *testing.T) {
+	r := setupRouter()
+	token := obtenerTokenTest(t)
+	body := map[string]string{"email_destino": "noexiste@test.com"}
+	jsonBody, _ := json.Marshal(body)
+	req, _ := http.NewRequest("POST", "/entradas/99999/transferir", bytes.NewBuffer(jsonBody))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+token)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+	if w.Code != http.StatusBadRequest {
+		t.Errorf("esperaba 400, got: %d", w.Code)
+	}
+}
+
+func TestTransferirEntrada_SinDatos(t *testing.T) {
+	r := setupRouter()
+	token := obtenerTokenTest(t)
+	req, _ := http.NewRequest("POST", "/entradas/1/transferir", bytes.NewBuffer([]byte(`{}`)))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+token)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+	if w.Code != http.StatusBadRequest {
+		t.Errorf("esperaba 400, got: %d", w.Code)
+	}
+}
+
+func obtenerTokenAdmin(t *testing.T) string {
+	email := fmt.Sprintf("admin_%d@test.com", time.Now().UnixNano())
+	resp, err := services.Registrar(domain.RegisterRequest{
+		Nombre:   "Admin Test",
+		Email:    email,
+		Password: "password123",
+	})
+	if err != nil {
+		t.Fatalf("no se pudo registrar: %v", err)
+	}
+	clients.DB.Exec("UPDATE usuarios SET rol = 'administrador' WHERE id = ?", resp.Usuario.ID)
+	loginResp, err := services.Login(domain.LoginRequest{Email: email, Password: "password123"})
+	if err != nil {
+		t.Fatalf("no se pudo loguear: %v", err)
+	}
+	return loginResp.Token
+}
+
+func TestActualizarEvento_ConTokenAdmin(t *testing.T) {
+	r := setupRouter()
+	token := obtenerTokenAdmin(t)
+	body := map[string]string{"titulo": "Titulo Nuevo"}
+	jsonBody, _ := json.Marshal(body)
+	req, _ := http.NewRequest("PUT", "/admin/eventos/1", bytes.NewBuffer(jsonBody))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+token)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+	if w.Code != http.StatusOK {
+		t.Errorf("esperaba 200, got: %d", w.Code)
+	}
+}
+
+func TestActualizarEvento_SinCambios(t *testing.T) {
+	r := setupRouter()
+	token := obtenerTokenAdmin(t)
+	req, _ := http.NewRequest("PUT", "/admin/eventos/1", bytes.NewBuffer([]byte(`{}`)))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+token)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+	if w.Code != http.StatusBadRequest {
+		t.Errorf("esperaba 400, got: %d", w.Code)
+	}
+}
+
+func TestGetReporteEvento_ConAdmin(t *testing.T) {
+	r := setupRouter()
+	token := obtenerTokenAdmin(t)
+	req, _ := http.NewRequest("GET", "/admin/eventos/1/reporte", nil)
+	req.Header.Set("Authorization", "Bearer "+token)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+	if w.Code != http.StatusOK {
+		t.Errorf("esperaba 200, got: %d", w.Code)
+	}
+}
+
+func TestGetReporteEvento_NoExiste(t *testing.T) {
+	r := setupRouter()
+	token := obtenerTokenAdmin(t)
+	req, _ := http.NewRequest("GET", "/admin/eventos/99999/reporte", nil)
+	req.Header.Set("Authorization", "Bearer "+token)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+	if w.Code != http.StatusNotFound {
+		t.Errorf("esperaba 404, got: %d", w.Code)
+	}
+}
+
+func TestCancelarEvento_ConAdmin(t *testing.T) {
+	r := setupRouter()
+	token := obtenerTokenAdmin(t)
+	eventoResp, _ := services.CrearEvento(domain.CrearEventoRequest{
+		Titulo:    "Evento Controller Test",
+		Fecha:     "2029-01-01",
+		Horario:   "20:00",
+		Categoria: "Teatro",
+		Sectores: []domain.CrearSectorRequest{
+			{Nombre: "Platea", CapacidadMaxima: 5, Precio: 2000},
+		},
+	}, 1)
+	url := fmt.Sprintf("/admin/eventos/%d", eventoResp.ID)
+	req, _ := http.NewRequest("DELETE", url, nil)
+	req.Header.Set("Authorization", "Bearer "+token)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+	if w.Code != http.StatusOK {
+		t.Errorf("esperaba 200, got: %d", w.Code)
+	}
+}
+
+func TestCancelarEvento_NoExiste(t *testing.T) {
+	r := setupRouter()
+	token := obtenerTokenAdmin(t)
+	req, _ := http.NewRequest("DELETE", "/admin/eventos/99999", nil)
+	req.Header.Set("Authorization", "Bearer "+token)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+	if w.Code != http.StatusNotFound {
+		t.Errorf("esperaba 404, got: %d", w.Code)
+	}
+}
+
+func TestGetEventos_ConFiltros(t *testing.T) {
+	r := setupRouter()
+	req, _ := http.NewRequest("GET", "/eventos?categoria=Concierto", nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+	if w.Code != http.StatusOK {
+		t.Errorf("esperaba 200, got: %d", w.Code)
+	}
+}
+
+func TestActualizarEvento_TokenCliente(t *testing.T) {
+	r := setupRouter()
+	token := obtenerTokenTest(t)
+	body := map[string]string{"titulo": "Titulo Nuevo"}
+	jsonBody, _ := json.Marshal(body)
+	req, _ := http.NewRequest("PUT", "/admin/eventos/1", bytes.NewBuffer(jsonBody))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+token)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+	if w.Code != http.StatusForbidden {
+		t.Errorf("esperaba 403, got: %d", w.Code)
+	}
+}
+
+func TestCancelarEvento_TokenCliente(t *testing.T) {
+	r := setupRouter()
+	token := obtenerTokenTest(t)
+	req, _ := http.NewRequest("DELETE", "/admin/eventos/1", nil)
+	req.Header.Set("Authorization", "Bearer "+token)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+	if w.Code != http.StatusForbidden {
+		t.Errorf("esperaba 403, got: %d", w.Code)
+	}
+}
+
+func TestGetReporteEvento_TokenCliente(t *testing.T) {
+	r := setupRouter()
+	token := obtenerTokenTest(t)
+	req, _ := http.NewRequest("GET", "/admin/eventos/1/reporte", nil)
+	req.Header.Set("Authorization", "Bearer "+token)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+	if w.Code != http.StatusForbidden {
+		t.Errorf("esperaba 403, got: %d", w.Code)
+	}
+}
+
+func TestCrearEvento_ConAdmin(t *testing.T) {
+	r := gin.New()
+	r.POST("/admin/eventos", middleware.AuthRequerido(), middleware.SoloAdmin(), CrearEvento)
+	token := obtenerTokenAdmin(t)
+	body := map[string]interface{}{
+		"titulo":    "Evento Nuevo Controller",
+		"fecha":     "2029-06-01",
+		"horario":   "21:00",
+		"categoria": "Concierto",
+		"sectores": []map[string]interface{}{
+			{"nombre": "Campo", "capacidad_maxima": 100, "precio": 1500.0},
+		},
+	}
+	jsonBody, _ := json.Marshal(body)
+	req, _ := http.NewRequest("POST", "/admin/eventos", bytes.NewBuffer(jsonBody))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+token)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+	if w.Code != http.StatusCreated {
+		t.Errorf("esperaba 201, got: %d — body: %s", w.Code, w.Body.String())
+	}
+}
+
+func TestCrearEvento_SinDatos(t *testing.T) {
+	r := gin.New()
+	r.POST("/admin/eventos", middleware.AuthRequerido(), middleware.SoloAdmin(), CrearEvento)
+	token := obtenerTokenAdmin(t)
+	req, _ := http.NewRequest("POST", "/admin/eventos", bytes.NewBuffer([]byte(`{}`)))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+token)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+	if w.Code != http.StatusBadRequest {
+		t.Errorf("esperaba 400, got: %d", w.Code)
+	}
+}
+
+func TestCrearEvento_SinToken(t *testing.T) {
+	r := gin.New()
+	r.POST("/admin/eventos", middleware.AuthRequerido(), middleware.SoloAdmin(), CrearEvento)
+	req, _ := http.NewRequest("POST", "/admin/eventos", bytes.NewBuffer([]byte(`{}`)))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+	if w.Code != http.StatusUnauthorized {
+		t.Errorf("esperaba 401, got: %d", w.Code)
+	}
+}
