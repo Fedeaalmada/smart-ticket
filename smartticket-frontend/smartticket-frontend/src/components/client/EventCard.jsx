@@ -22,10 +22,13 @@ export default function EventCard({ evento }) {
 
   return (
     <div className={styles.card} onClick={() => navigate(`/eventos/${evento.id}`)}>
-      <div className={styles.thumb}>
-        <span className={styles.icon}>{icon}</span>
-        <span className={styles.cat}>{evento.categoria}</span>
-      </div>
+     <div className={styles.thumb}>
+  {evento.foto_url
+    ? <img src={evento.foto_url} alt={evento.titulo} style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.7 }} />
+    : <span className={styles.icon}>{icon}</span>
+  }
+  <span className={styles.cat}>{evento.categoria}</span>
+</div>
       <div className={styles.body}>
         <div className={styles.name}>{evento.titulo}</div>
         <div className={styles.meta}>

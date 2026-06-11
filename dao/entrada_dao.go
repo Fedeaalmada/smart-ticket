@@ -32,11 +32,14 @@ func CancelarEntrada(id uint) error {
 }
 
 func TransferirEntrada(entradaID, nuevoUsuarioID uint) error {
+	// El ticket cambia de titular pero sigue activo: el nuevo dueño
+	// debe poder cancelarlo o volver a transferirlo. El historial de
+	// quién lo tuvo antes queda registrado en la tabla "transferencias".
 	return clients.DB.Model(&domain.Entrada{}).
 		Where("id = ?", entradaID).
 		Updates(map[string]interface{}{
 			"usuario_id": nuevoUsuarioID,
-			"estado":     domain.EntradaTransferida,
+			"estado":     domain.EntradaActiva,
 		}).Error
 }
 
