@@ -53,7 +53,7 @@ export default function Catalogo() {
       <section className={styles.hero}>
         <Particles />
         <div className={styles.heroContent}>
-          <p className={styles.eyebrow}>SmartTicket — Córdoba</p>
+          <p className={styles.eyebrow}>SmartTicket — Argentina</p>
           <h1 className={styles.heroTitle}>
             Tu próxima <span>experiencia</span><br />te espera.
           </h1>
@@ -109,6 +109,31 @@ export default function Catalogo() {
           </div>
         )}
       </section>
+      <footer style={{
+  background: '#0D0D0D',
+  borderTop: '1px solid #1a1a1a',
+  padding: '2.5rem 1.5rem 1.5rem',
+  textAlign: 'center',
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  gap: '1rem'
+}}>
+  <div style={{ display: 'flex', gap: '1rem', fontSize: '1.3rem' }}>
+    <span style={{ cursor: 'pointer', color: '#555' }}>📘</span>
+    <span style={{ cursor: 'pointer', color: '#555' }}>📸</span>
+    <span style={{ cursor: 'pointer', color: '#555' }}>🐦</span>
+  </div>
+  <div style={{ fontFamily: 'var(--font-display)', fontSize: '1rem', fontWeight: 700, color: '#333' }}>
+    Smart<span style={{ color: '#E03030' }}>Ticket</span>
+  </div>
+  <p style={{ fontSize: '0.72rem', color: '#333', maxWidth: '500px', lineHeight: 1.6 }}>
+    Importante: SmartTicket no se hace responsable de la calidad o satisfacción de los eventos publicados. SmartTicket es un sistema que presta el servicio de venta de entradas online. Al usar este sitio usted acepta los términos y condiciones de la aplicación. Copyright © 2026 SmartTicket.
+  </p>
+  <p style={{ fontSize: '0.7rem', color: '#2a2a2a' }}>
+    Términos y condiciones
+  </p>
+</footer>
     </div>
   )
 }
