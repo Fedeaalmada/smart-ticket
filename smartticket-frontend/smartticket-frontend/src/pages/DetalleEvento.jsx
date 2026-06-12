@@ -48,24 +48,28 @@ export default function DetalleEvento() {
   }
 
   const fechaFormateada = evento
-    ? new Date(evento.fecha).toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+    ? new Date(evento.fecha).toLocaleDateString('es-AR', {
+        weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+      })
     : ''
 
   if (loading) return (
-    <div className={styles.page}><Navbar />
+    <div className={styles.page}>
+      <Navbar />
       <div className={styles.center}><div className={styles.spinner} /></div>
     </div>
   )
 
   if (error) return (
-    <div className={styles.page}><Navbar />
+    <div className={styles.page}>
+      <Navbar />
       <div className={styles.center}><p className={styles.errorMsg}>{error}</p></div>
     </div>
   )
 
-  // Pantalla de éxito
   if (exito) return (
-    <div className={styles.page}><Navbar />
+    <div className={styles.page}>
+      <Navbar />
       <div className={styles.exitoWrap}>
         <div className={styles.exitoCard}>
           <div className={styles.exitoIcon}>🎫</div>
@@ -90,9 +94,36 @@ export default function DetalleEvento() {
   return (
     <div className={styles.page}>
       <Navbar />
-      <div className={styles.container}>
 
-        {/* Header del evento */}
+      {evento.foto_url && (
+        <div style={{
+          width: '100%',
+          height: '280px',
+          overflow: 'hidden',
+          position: 'relative'
+        }}>
+          <img
+            src={evento.foto_url}
+            alt={evento.titulo}
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              opacity: 0.75
+            }}
+          />
+          <div style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: '120px',
+            background: 'linear-gradient(to top, #111, transparent)'
+          }} />
+        </div>
+      )}
+
+      <div className={styles.container}>
         <div className={styles.header}>
           <div className={styles.headerContent}>
             <span className={styles.cat}>{evento.categoria}</span>
@@ -102,12 +133,13 @@ export default function DetalleEvento() {
               <span className={styles.metaItem}>📅 {fechaFormateada}</span>
               <span className={styles.metaItem}>🕐 {evento.horario} hs</span>
               <span className={styles.metaItem}>⏱ {evento.duracion_minutos} min</span>
-              <span className={styles.metaItem}>👥 Capacidad: {evento.capacidad_total?.toLocaleString('es-AR')}</span>
+              <span className={styles.metaItem}>
+                👥 Capacidad: {evento.capacidad_total?.toLocaleString('es-AR')}
+              </span>
             </div>
           </div>
         </div>
 
-        {/* Selección de sector */}
         <div className={styles.sectoresSection}>
           <h2 className={styles.sectionLabel}>Elegí tu sector</h2>
           <div className={styles.sectoresList}>
@@ -133,27 +165,22 @@ export default function DetalleEvento() {
           </div>
         </div>
 
-        {/* Botón de compra */}
         <div className={styles.compraSection}>
           {errorCompra && <p className={styles.errorMsg}>{errorCompra}</p>}
           <button
             className={styles.btnComprar}
-            onClick={handleComprar}
+            onClick={usuario ? handleComprar : () => navigate('/login')}
             disabled={!sectorSeleccionado || comprando}
           >
-            {comprando
-              ? 'Procesando...'
-              : sectorSeleccionado
-                ? `Comprar — ${sectorSeleccionado.nombre} $${sectorSeleccionado.precio.toLocaleString('es-AR')}`
-                : 'Seleccioná un sector'}
+            {!usuario
+              ? 'Iniciá sesión para comprar'
+              : comprando
+                ? 'Procesando...'
+                : sectorSeleccionado
+                  ? `Comprar — ${sectorSeleccionado.nombre} $${sectorSeleccionado.precio.toLocaleString('es-AR')}`
+                  : 'Seleccioná un sector'}
           </button>
-          {!usuario && (
-            <p className={styles.loginHint}>
-              Necesitás <span onClick={() => navigate('/login')}>iniciar sesión</span> para comprar.
-            </p>
-          )}
         </div>
-
       </div>
     </div>
   )
