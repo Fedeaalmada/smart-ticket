@@ -440,11 +440,22 @@ func obtenerTokenAdmin(t *testing.T) string {
 }
 
 func TestActualizarEvento_ConTokenAdmin(t *testing.T) {
+	evento, err := services.CrearEvento(domain.CrearEventoRequest{
+		Titulo:    "Evento Actualizar Test",
+		Fecha:     "2029-06-01",
+		Horario:   "20:00",
+		Categoria: "Teatro",
+		Sectores:  []domain.CrearSectorRequest{{Nombre: "Platea", CapacidadMaxima: 5, Precio: 1000}},
+	}, 1)
+	if err != nil {
+		t.Fatalf("no se pudo crear evento de prueba: %v", err)
+	}
 	r := setupRouter()
 	token := obtenerTokenAdmin(t)
 	body := map[string]string{"titulo": "Titulo Nuevo"}
 	jsonBody, _ := json.Marshal(body)
-	req, _ := http.NewRequest("PUT", "/admin/eventos/1", bytes.NewBuffer(jsonBody))
+	url := fmt.Sprintf("/admin/eventos/%d", evento.ID)
+	req, _ := http.NewRequest("PUT", url, bytes.NewBuffer(jsonBody))
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+token)
 	w := httptest.NewRecorder()
