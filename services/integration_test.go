@@ -14,7 +14,19 @@ import (
 func TestMain(m *testing.M) {
 	godotenv.Load("../.env")
 	clients.ConnectDB()
-	os.Exit(m.Run())
+
+	code := m.Run()
+
+	// Limpiar datos creados por los tests (respetando el orden de FK)
+	clients.DB.Exec("DELETE FROM transferencias WHERE entrada_id IN (SELECT id FROM entradas WHERE evento_id > 3)")
+	clients.DB.Exec("DELETE FROM transferencias WHERE entrada_id IN (SELECT id FROM entradas WHERE usuario_id IN (SELECT id FROM usuarios WHERE email LIKE '%@test.com'))")
+	clients.DB.Exec("DELETE FROM entradas WHERE evento_id > 3")
+	clients.DB.Exec("DELETE FROM entradas WHERE usuario_id IN (SELECT id FROM usuarios WHERE email LIKE '%@test.com')")
+	clients.DB.Exec("DELETE FROM sectores WHERE evento_id > 3")
+	clients.DB.Exec("DELETE FROM eventos WHERE id > 3")
+	clients.DB.Exec("DELETE FROM usuarios WHERE email LIKE '%@test.com'")
+
+	os.Exit(code)
 }
 
 func TestRegistrar_Exitoso(t *testing.T) {
