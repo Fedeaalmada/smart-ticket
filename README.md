@@ -15,7 +15,16 @@ Permite a los usuarios explorar un catálogo de eventos, ver el detalle de cada 
 
 ## Capturas de pantalla
 
-> _Pendiente: agregar capturas del catálogo, detalle de evento, compra y panel de administración._
+### Catálogo de eventos
+![Catálogo](docs/screenshots/catalogo.png)
+
+### Detalle de evento con sectores
+![Detalle evento](docs/screenshots/detalle_evento.png)
+
+### Panel de administración
+![Panel admin](docs/screenshots/admin_panel.png)
+
+> _Para ver las capturas asegurate de haber levantado el proyecto y accedido a las vistas._
 
 ## Tecnologías Utilizadas
 
@@ -106,11 +115,96 @@ La aplicación queda disponible en `http://localhost:3000` (con proxy configurad
 go test ./... -cover
 ```
 
+---
+
+## Levantar con Docker (opción recomendada)
+
+### Requisitos
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) instalado y corriendo
+
+### Pasos
+
+```bash
+# 1. Clonar el repo
+git clone https://github.com/Fedeaalmada/smart-ticket.git
+cd smart-ticket
+
+# 2. Levantar todos los servicios (backend + frontend + MySQL)
+docker compose up --build
+
+# 3. Acceder a la aplicación
+#    Frontend:  http://localhost:3000
+#    Backend:   http://localhost:8080
+#    MySQL:     localhost:3307
+```
+
+Para detener:
+```bash
+docker compose down
+```
+
+Para detener y eliminar los datos de la base de datos:
+```bash
+docker compose down -v
+```
+
+### Servicios Docker
+
+| Servicio  | Puerto local | Descripción                  |
+|-----------|-------------|------------------------------|
+| frontend  | 3000        | React (Nginx)                |
+| backend   | 8080        | API Go (Gin)                 |
+| db        | 3307        | MySQL 8.0                    |
+
+---
+
 ## Diagrama de Base de Datos
 
-El modelo de datos contempla las entidades **Usuarios**, **Eventos**, **Sectores**, **Entradas** y **Transferencias**, mapeadas mediante GORM con sus respectivas claves foráneas.
+```
+┌─────────────┐       ┌─────────────────┐       ┌──────────────┐
+│  usuarios   │       │    eventos      │       │   sectores   │
+│─────────────│       │─────────────────│       │──────────────│
+│ id (PK)     │       │ id (PK)         │◄──────│ id (PK)      │
+│ nombre      │       │ titulo          │       │ evento_id(FK)│
+│ email       │       │ descripcion     │       │ nombre       │
+│ password_   │       │ foto_url        │       │ capacidad_   │
+│   hash      │       │ fecha           │       │   maxima     │
+│ rol         │       │ horario         │       │ capacidad_   │
+│ activo      │       │ duracion_min    │       │   disponible │
+└──────┬──────┘       │ categoria       │       │ precio       │
+       │              │ capacidad_total │       └──────┬───────┘
+       │              │ estado          │              │
+       │              │ creado_por (FK) │              │
+       │              └─────────────────┘              │
+       │                                               │
+       │         ┌─────────────────┐                   │
+       │         │    entradas     │                   │
+       │         │─────────────────│                   │
+       └────────►│ id (PK)         │◄──────────────────┘
+                 │ usuario_id (FK) │
+                 │ sector_id (FK)  │
+                 │ evento_id (FK)  │
+                 │ precio_pagado   │
+                 │ estado          │
+                 └────────┬────────┘
+                          │
+                 ┌────────▼────────┐
+                 │ transferencias  │
+                 │─────────────────│
+                 │ id (PK)         │
+                 │ entrada_id (FK) │
+                 │ usuario_origen  │
+                 │ usuario_destino │
+                 │ created_at      │
+                 └─────────────────┘
+```
 
-![Diagrama de Base de Datos](docs/diagrama_bd.png)
+**Relaciones:**
+- Un `Usuario` puede tener muchas `Entradas`
+- Un `Evento` tiene muchos `Sectores` (Campo, Platea, VIP)
+- Un `Sector` pertenece a un `Evento` y tiene capacidad y precio propios
+- Una `Entrada` pertenece a un `Usuario`, un `Sector` y un `Evento`
+- Una `Transferencia` registra el traspaso histórico de una `Entrada`
 
 ## Decisiones de Diseño
 

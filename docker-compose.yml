@@ -1,0 +1,59 @@
+version: "3.9"
+
+services:
+
+  # ── Base de datos MySQL ───────────────────────────────────────
+  db:
+    image: mysql:8.0
+    container_name: smartticket-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: 218654
+      MYSQL_DATABASE: ticketek_db
+    ports:
+      - "3307:3306"   # 3307 en la PC para no chocar con MySQL local
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./docker-init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p218654"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Backend Go ───────────────────────────────────────────────
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: smartticket-backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD: 218654
+      DB_NAME: ticketek_db
+      JWT_SECRET: smartticket_jwt_secret_super_seguro_2026
+      JWT_EXPIRATION_HOURS: 24
+      SERVER_PORT: 8080
+    ports:
+      - "8080:8080"
+
+  # ── Frontend React ───────────────────────────────────────────
+  frontend:
+    build:
+      context: ./smartticket-frontend/smartticket-frontend
+      dockerfile: Dockerfile
+    container_name: smartticket-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "3000:80"
+
+volumes:
+  db_data:

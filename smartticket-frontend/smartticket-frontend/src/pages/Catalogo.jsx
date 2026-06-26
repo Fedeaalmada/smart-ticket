@@ -19,7 +19,7 @@ export default function Catalogo() {
     setError(null)
     try {
       const res = await eventoService.getAll(filtros)
-      setEventos(res.data || [])
+      setEventos(Array.isArray(res.data) ? res.data : [])
     } catch {
       setError('No se pudieron cargar los eventos.')
     } finally {

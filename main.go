@@ -13,8 +13,10 @@ import (
 )
 
 func main() {
-	// Conectar a la base de datos
+	// Conectar a la base de datos, crear tablas y cargar datos iniciales
 	clients.ConnectDB()
+	clients.MigrateDB()
+	clients.SeedDB()
 
 	// Configurar router
 	r := gin.Default()
