@@ -211,6 +211,18 @@ func TestActualizarEvento_ConCambios(t *testing.T) {
 	}
 }
 
+func TestActualizarEvento_ConSectores(t *testing.T) {
+	req := domain.ActualizarEventoRequest{
+		Sectores: []domain.ActualizarSectorRequest{
+			{ID: 1, Precio: 16000},
+		},
+	}
+	err := ActualizarEvento(1, req)
+	if err != nil {
+		t.Fatalf("no se esperaba error, got: %v", err)
+	}
+}
+
 func TestActualizarEvento_FechaInvalida(t *testing.T) {
 	req := domain.ActualizarEventoRequest{
 		Fecha: "fecha-invalida",
