@@ -7,14 +7,44 @@ export function AuthProvider({ children }) {
   const [token, setToken] = useState(null)
   const [loading, setLoading] = useState(true)
 
+  const tokenExpirado = (token) => {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]))
+      return payload.exp * 1000 < Date.now()
+    } catch {
+      return true
+    }
+  }
+
   useEffect(() => {
     const savedToken = localStorage.getItem('st_token')
     const savedUsuario = localStorage.getItem('st_usuario')
     if (savedToken && savedUsuario) {
-      setToken(savedToken)
-      setUsuario(JSON.parse(savedUsuario))
+      if (tokenExpirado(savedToken)) {
+        localStorage.removeItem('st_token')
+        localStorage.removeItem('st_usuario')
+        localStorage.setItem('st_sesion_expirada', 'true')
+      } else {
+        setToken(savedToken)
+        setUsuario(JSON.parse(savedUsuario))
+      }
     }
     setLoading(false)
+  }, [])
+
+  useEffect(() => {
+    const intervalo = setInterval(() => {
+      const t = localStorage.getItem('st_token')
+      if (t && tokenExpirado(t)) {
+        localStorage.removeItem('st_token')
+        localStorage.removeItem('st_usuario')
+        localStorage.setItem('st_sesion_expirada', 'true')
+        setToken(null)
+        setUsuario(null)
+        window.location.href = '/login'
+      }
+    }, 10000)
+    return () => clearInterval(intervalo)
   }, [])
 
   const login = (tokenData, usuarioData) => {

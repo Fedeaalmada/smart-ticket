@@ -38,15 +38,22 @@ type CrearEventoRequest struct {
 	Sectores        []CrearSectorRequest `json:"sectores"   binding:"required,min=1"`
 }
 
+type ActualizarSectorRequest struct {
+	ID              uint    `json:"id"`
+	Precio          float64 `json:"precio"`
+	CapacidadMaxima uint    `json:"capacidad_maxima"`
+}
+
 type ActualizarEventoRequest struct {
-	Titulo          string `json:"titulo"`
-	Descripcion     string `json:"descripcion"`
-	FotoURL         string `json:"foto_url"`
-	Fecha           string `json:"fecha"`
-	Horario         string `json:"horario"`
-	DuracionMinutos uint   `json:"duracion_minutos"`
-	Categoria       string `json:"categoria"`
-	Estado          string `json:"estado"`
+	Titulo          string                   `json:"titulo"`
+	Descripcion     string                   `json:"descripcion"`
+	FotoURL         string                   `json:"foto_url"`
+	Fecha           string                   `json:"fecha"`
+	Horario         string                   `json:"horario"`
+	DuracionMinutos uint                     `json:"duracion_minutos"`
+	Categoria       string                   `json:"categoria"`
+	Estado          string                   `json:"estado"`
+	Sectores        []ActualizarSectorRequest `json:"sectores"`
 }
 
 // ── Sectores ─────────────────────────────────────────────────

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { authService } from '../services/api'
 import { useAuth } from '../context/AuthContext'
@@ -11,6 +11,13 @@ export function Login() {
   const [form, setForm] = useState({ email: '', password: '' })
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
+  const [sesionExpirada, setSesionExpirada] = useState(false)
+
+  useEffect(() => {
+    if (localStorage.getItem('st_sesion_expirada') === 'true') {
+      setSesionExpirada(true)
+    }
+  }, [])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -18,6 +25,7 @@ export function Login() {
     setError(null)
     try {
       const res = await authService.login(form)
+      localStorage.removeItem('st_sesion_expirada')
       login(res.data.token, res.data.usuario)
       navigate(res.data.usuario.rol === 'administrador' ? '/admin' : '/')
     } catch (err) {
@@ -33,6 +41,9 @@ export function Login() {
       <div className={styles.card}>
         <Link to="/" className={styles.logo}>Smart<span>Ticket</span></Link>
         <h1 className={styles.titulo}>Iniciar sesión</h1>
+        {sesionExpirada && (
+          <p className={styles.error}>Tu sesión expiró. Por favor iniciá sesión de nuevo.</p>
+        )}
         <p className={styles.sub}>Ingresá con tu cuenta para comprar entradas</p>
         <form onSubmit={handleSubmit} className={styles.form}>
           <div className={styles.field}>

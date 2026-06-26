@@ -27,6 +27,20 @@ func IncrementarCapacidad(sectorID uint) error {
 		UpdateColumn("capacidad_disponible", clients.DB.Raw("capacidad_disponible + 1")).Error
 }
 
+func ActualizarSector(id uint, precio float64, capacidadMaxima uint) error {
+	cambios := map[string]interface{}{}
+	if precio > 0 {
+		cambios["precio"] = precio
+	}
+	if capacidadMaxima > 0 {
+		cambios["capacidad_maxima"] = capacidadMaxima
+	}
+	if len(cambios) == 0 {
+		return nil
+	}
+	return clients.DB.Model(&domain.Sector{}).Where("id = ?", id).Updates(cambios).Error
+}
+
 func EliminarSectoresPorEvento(eventoID uint) error {
 	return clients.DB.Where("evento_id = ?", eventoID).Delete(&domain.Sector{}).Error
 }

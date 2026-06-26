@@ -102,11 +102,26 @@ func ActualizarEvento(id uint, req domain.ActualizarEventoRequest) error {
 		cambios["estado"] = req.Estado
 	}
 
-	if len(cambios) == 0 {
+	if len(cambios) == 0 && len(req.Sectores) == 0 {
 		return errors.New("no se enviaron campos para actualizar")
 	}
 
-	return dao.ActualizarEvento(id, cambios)
+	if len(cambios) > 0 {
+		if err := dao.ActualizarEvento(id, cambios); err != nil {
+			return err
+		}
+	}
+
+	for _, s := range req.Sectores {
+		if s.ID == 0 {
+			continue
+		}
+		if err := dao.ActualizarSector(s.ID, s.Precio, s.CapacidadMaxima); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func CancelarEvento(id uint) error {

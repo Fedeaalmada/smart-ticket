@@ -37,6 +37,14 @@ export default function AdminFormEvento() {
           duracion_minutos: ev.duracion_minutos || 120,
           categoria: ev.categoria || 'Concierto',
         })
+        if (ev.sectores && ev.sectores.length > 0) {
+          setSectores(ev.sectores.map((s) => ({
+            id: s.id,
+            nombre: s.nombre,
+            capacidad_maxima: s.capacidad_maxima,
+            precio: s.precio,
+          })))
+        }
       } catch {
         setError('No se pudo cargar el evento.')
       } finally {
@@ -66,7 +74,16 @@ export default function AdminFormEvento() {
 
     try {
       if (esEdicion) {
-        await eventoService.actualizar(id, form)
+        const payload = {
+          ...form,
+          duracion_minutos: Number(form.duracion_minutos),
+          sectores: sectores.map((s) => ({
+            id: s.id,
+            precio: Number(s.precio),
+            capacidad_maxima: Number(s.capacidad_maxima),
+          })),
+        }
+        await eventoService.actualizar(id, payload)
       } else {
         const payload = {
           ...form,
@@ -141,35 +158,35 @@ export default function AdminFormEvento() {
             </div>
           </section>
 
-          {!esEdicion && (
-            <section className={styles.section}>
-              <div className={styles.sectionHeader}>
-                <h2 className={styles.sectionTitle}>Sectores y precios</h2>
+          <section className={styles.section}>
+            <div className={styles.sectionHeader}>
+              <h2 className={styles.sectionTitle}>Sectores y precios</h2>
+              {!esEdicion && (
                 <button type="button" onClick={agregarSector} className={styles.btnAgregar}>
                   + Agregar sector
                 </button>
-              </div>
-              {sectores.map((s, i) => (
-                <div key={i} className={styles.sectorRow}>
-                  <div className={styles.field}>
-                    <label>Nombre del sector</label>
-                    <input value={s.nombre} onChange={(e) => handleSector(i, 'nombre', e.target.value)} required placeholder="Ej: Campo, Platea, VIP" />
-                  </div>
-                  <div className={styles.field}>
-                    <label>Capacidad máxima</label>
-                    <input type="number" value={s.capacidad_maxima} onChange={(e) => handleSector(i, 'capacidad_maxima', e.target.value)} required min="1" placeholder="Ej: 500" />
-                  </div>
-                  <div className={styles.field}>
-                    <label>Precio ($)</label>
-                    <input type="number" value={s.precio} onChange={(e) => handleSector(i, 'precio', e.target.value)} required min="0" placeholder="Ej: 15000" />
-                  </div>
-                  {sectores.length > 1 && (
-                    <button type="button" onClick={() => eliminarSector(i)} className={styles.btnEliminarSector}>✕</button>
-                  )}
+              )}
+            </div>
+            {sectores.map((s, i) => (
+              <div key={i} className={styles.sectorRow}>
+                <div className={styles.field}>
+                  <label>Nombre del sector</label>
+                  <input value={s.nombre} onChange={(e) => handleSector(i, 'nombre', e.target.value)} required placeholder="Ej: Campo, Platea, VIP" disabled={esEdicion} />
                 </div>
-              ))}
-            </section>
-          )}
+                <div className={styles.field}>
+                  <label>Capacidad máxima</label>
+                  <input type="number" value={s.capacidad_maxima} onChange={(e) => handleSector(i, 'capacidad_maxima', e.target.value)} required min="1" placeholder="Ej: 500" />
+                </div>
+                <div className={styles.field}>
+                  <label>Precio ($)</label>
+                  <input type="number" value={s.precio} onChange={(e) => handleSector(i, 'precio', e.target.value)} required min="0" placeholder="Ej: 15000" />
+                </div>
+                {!esEdicion && sectores.length > 1 && (
+                  <button type="button" onClick={() => eliminarSector(i)} className={styles.btnEliminarSector}>✕</button>
+                )}
+              </div>
+            ))}
+          </section>
 
           <div className={styles.formActions}>
             <button type="button" onClick={() => navigate('/admin')} className={styles.btnCancelar}>

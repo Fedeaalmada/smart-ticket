@@ -20,9 +20,9 @@ type Claims struct {
 
 // GenerarToken crea un JWT firmado para el usuario dado.
 func GenerarToken(usuario *domain.Usuario) (string, error) {
-	horas, err := strconv.Atoi(os.Getenv("JWT_EXPIRATION_HOURS"))
+	minutos, err := strconv.Atoi(os.Getenv("JWT_EXPIRATION_HOURS"))
 	if err != nil {
-		horas = 24
+		minutos = 1440
 	}
 
 	claims := Claims{
@@ -30,7 +30,7 @@ func GenerarToken(usuario *domain.Usuario) (string, error) {
 		Email:     usuario.Email,
 		Rol:       usuario.Rol,
 		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Duration(horas) * time.Hour)),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Duration(minutos) * time.Minute)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 		},
 	}

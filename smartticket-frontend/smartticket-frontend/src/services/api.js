@@ -19,6 +19,7 @@ api.interceptors.response.use(
     if (err.response?.status === 401) {
       localStorage.removeItem('st_token')
       localStorage.removeItem('st_usuario')
+      localStorage.setItem('st_sesion_expirada', 'true')
       window.location.href = '/login'
     }
     return Promise.reject(err)
